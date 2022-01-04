@@ -1,7 +1,11 @@
 #ifndef __COMMONS_H__
 #define __COMMONS_H__
 
-#define BOARD_LEN 880
+#include <iostream>
+#include <vector>
+#include <set>
+
+#define BOARD_LEN 1000
 
 #define WHITE 0
 #define BLACK 1

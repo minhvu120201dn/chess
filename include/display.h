@@ -7,7 +7,7 @@
 class DisplayedBoard {
     sf::RectangleShape boardfig;
     sf::RectangleShape *figs[8][8];
-    Board board;
+    Board *board = new Board;
 public:
     bool moving = false;
     DisplayedBoard();
@@ -15,6 +15,7 @@ public:
     bool beginMove(int,int);
     void movingPiece(int,int);
     void movePiece(int,int);
+    ~DisplayedBoard();
 };
 
 #endif

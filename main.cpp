@@ -19,8 +19,11 @@ int main() {
                 }
                 case sf::Event::MouseButtonPressed: {
                     float x = event.mouseButton.x, y = event.mouseButton.y;
-                    if (board.beginMove(x,y))
+                    if (board.beginMove(x,y)) {
                         board.moving = true;
+                        mouse_x = x, mouse_y = y;
+                        board.movingPiece(mouse_x, mouse_y);
+                    }
                     break;
                 }
                 case sf::Event::MouseMoved: {
@@ -36,10 +39,11 @@ int main() {
                     break;
                 }
                 case sf::Event::MouseButtonReleased: {
-                    board.moving = false;
-                    board.movePiece(mouse_x, mouse_y);
-                    //board.pieces[WHITE][KING].setPosition((mouse_x/(BOARD_LEN/8))*(BOARD_LEN/8), (mouse_y/(BOARD_LEN/8))*(BOARD_LEN/8));
-                    break;
+                    if (board.moving) {
+                        board.moving = false;
+                        board.movePiece(mouse_x, mouse_y);
+                        break;
+                    }
                 }
             }
         }
