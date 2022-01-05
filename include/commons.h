@@ -17,4 +17,8 @@
 #define ROOK 4
 #define PAWN 5
 
+class Board;
+class DisplayedBoard;
+int main();
+
 #endif
