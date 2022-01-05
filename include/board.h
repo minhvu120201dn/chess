@@ -6,6 +6,7 @@ class Board {
     char pieces[8][8];
     bool turn = WHITE;
     bool king_moved[2] = {false}, lrook_moved[2] = {false}, rrook_moved[2] = {false};
+    char pawn_justmoved[2] = {-1};
 private:
     inline bool sameSide(char col1, char row1, char col2, char row2) {
         return this->sides[row1][col1] == this->sides[row2][col2];
