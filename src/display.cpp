@@ -89,12 +89,14 @@ void DisplayedBoard::movePiece(int x, int y) {
         ::availableMoves = nullptr;
         return;
     }
+#ifndef DEBUG
     if (!::availableMoves->count({x,y})) {
         ::movingFig = nullptr;
         delete ::availableMoves;
         ::availableMoves = nullptr;
         return;
     }
+#endif
 
     if (king_moving && abs(x-xmov)==2) {
         if (x < xmov) {

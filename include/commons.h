@@ -21,4 +21,6 @@ class Board;
 class DisplayedBoard;
 int main();
 
+//#define DEBUG
+
 #endif

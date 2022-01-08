@@ -14,6 +14,7 @@ private:
     inline bool empty(char col, char row) {
         return this->sides[row][col] == -1;
     }
+    bool checkKingSafe(char,char,bool);
     std::set<std::pair<char,char>>* availMovesKing(char,char);
     std::set<std::pair<char,char>>* availMovesQueen(char,char);
     std::set<std::pair<char,char>>* availMovesBishop(char,char);
