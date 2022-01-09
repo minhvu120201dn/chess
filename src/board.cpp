@@ -19,16 +19,15 @@ char init_pieces[8][8] = { { 4, 3, 2, 1, 0, 2, 3, 4},
                            { 5, 5, 5, 5, 5, 5, 5, 5},
                            { 4, 3, 2, 1, 0, 2, 3, 4} };
 
+bool cover_king = false;
+std::set<std::pair<char,char>> cover;
+
 Board::Board() {
     for (char i = 0; i < 8; ++i)
         for (char j = 0; j < 8; ++j)
-            this->sides[i][j] = init_sides[i][j], this->pieces[i][j] = init_pieces[i][j];    
-}
-
-Board::Board(char sides[][8], char pieces[][8], bool white_turn) : turn(white_turn) {
-    for (char i = 0; i < 8; ++i)
-        for (char j = 0; j < 8; ++j)
-            this->sides[i][j] = sides[i][j], this->pieces[i][j] = pieces[i][j];
+            this->sides[i][j] = init_sides[i][j], this->pieces[i][j] = init_pieces[i][j];
+    this->king_row[WHITE] = 7, this->king_col[WHITE] = 4;
+    this->king_row[BLACK] = 0, this->king_col[BLACK] = 4;
 }
 
 Board::Board(const Board& copy) {
@@ -37,15 +36,26 @@ Board::Board(const Board& copy) {
 
 bool Board::checkKingSafe(char col, char row, bool side) {
     std::set<std::pair<char,char>> *temp;
-    bool actual_side = this->sides[row][col];
+    char actual_side = this->sides[row][col];
     this->sides[row][col] = side;
+    bool ret = true;
 
     temp = this->availMovesKnight(col,row);
     for (std::pair<char,char> grid : *temp) {
         if (this->sides[grid.second][grid.first] == !side &&
                 this->pieces[grid.second][grid.first] == KNIGHT) {
             this->sides[row][col] = actual_side;
-            return false;
+            if (!::cover_king) return false;
+            else {
+                if (ret) {
+                    ret = false;
+                    cover.insert(std::make_pair(grid.first,grid.second));
+                }
+                else {
+                    ::cover.clear();
+                    return false;
+                }
+            }
         }
     }
     delete temp;
@@ -56,7 +66,32 @@ bool Board::checkKingSafe(char col, char row, bool side) {
                 (this->pieces[grid.second][grid.first] == ROOK ||
                  this->pieces[grid.second][grid.first] == QUEEN)) {
             this->sides[row][col] = actual_side;
-            return false;
+            if (!::cover_king) return false;
+            else {
+                if (ret) {
+                    ret = false;
+                    if (grid.second < row) {
+                        for (int hori = grid.second + 1; hori <= row; ++hori)
+                            ::cover.insert(std::make_pair(col,hori));
+                    }
+                    else if (grid.second > row) {
+                        for (int hori = grid.second - 1; hori >= row; --hori)
+                            ::cover.insert(std::make_pair(col,hori));
+                    }
+                    else if (grid.first < col) {
+                        for (int vert = grid.first + 1; vert <= col; ++vert)
+                            ::cover.insert(std::make_pair(vert,row));
+                    }
+                    else if (grid.first > col) {
+                        for (int vert = grid.first - 1; vert >= col; --vert)
+                            ::cover.insert(std::make_pair(vert,row));
+                    }
+                }
+                else {
+                    ::cover.clear();
+                    return false;
+                }
+            }
         }
     }
     delete temp;
@@ -67,7 +102,32 @@ bool Board::checkKingSafe(char col, char row, bool side) {
                 (this->pieces[grid.second][grid.first] == BISHOP ||
                  this->pieces[grid.second][grid.first] == QUEEN)) {
             this->sides[row][col] = actual_side;
-            return false;
+            if (!::cover_king) return false;
+            else {
+                if (ret) {
+                    ret = false;
+                    if (grid.second < row && grid.first < col) {
+                        for (int hori = grid.second + 1, vert = grid.first + 1; hori <= row && vert <= col; ++hori, ++vert)
+                            ::cover.insert(std::make_pair(vert,hori));
+                    }
+                    else if (grid.second > row && grid.first < col) {
+                        for (int hori = grid.second - 1, vert = grid.first + 1; hori >= row && vert <= col; --hori, ++vert)
+                            ::cover.insert(std::make_pair(vert,hori));
+                    }
+                    else if (grid.second < row && grid.first > col) {
+                        for (int hori = grid.second + 1, vert = grid.first - 1; hori <= row && vert >= col; ++hori, --vert)
+                            ::cover.insert(std::make_pair(vert,hori));
+                    }
+                    else if (grid.second > row && grid.first > col) {
+                        for (int hori = grid.second - 1, vert = grid.first - 1; hori >= row && vert >= col; --hori, --vert)
+                            ::cover.insert(std::make_pair(vert,hori));
+                    }
+                }
+                else {
+                    ::cover.clear();
+                    return false;
+                }
+            }
         }
     }
     delete temp;
@@ -77,90 +137,162 @@ bool Board::checkKingSafe(char col, char row, bool side) {
     switch(side) {
         case WHITE: {
             if (row > 0 && col > 0) {
-                if (sides[row-1][col-1] == BLACK && pieces[row-1][col-1] == PAWN)
-                    return false;
+                if (sides[row-1][col-1] == BLACK && pieces[row-1][col-1] == PAWN) {
+                    if (!::cover_king) return false;
+                    else {
+                        if (ret) {
+                            cover.insert(std::make_pair(col-1,row-1));
+                            ret = false;
+                        }
+                        else {
+                            ::cover.clear();
+                            return false;
+                        }
+                    }
+                }
                 //std::cout << (int)row-1 << ' ' << (int)col-1 << std::endl;
             }
             if (row > 0 && col < 7) {
-                if (sides[row-1][col+1] == BLACK && pieces[row-1][col+1] == PAWN)
-                    return false;
+                if (sides[row-1][col+1] == BLACK && pieces[row-1][col+1] == PAWN) {
+                    if (!::cover_king) return false;
+                    else {
+                        if (ret) {
+                            cover.insert(std::make_pair(col+1,row-1));
+                            ret = false;
+                        }
+                        else {
+                            ::cover.clear();
+                            return false;
+                        }
+                    }
+                }
                 //std::cout << (int)row-1 << ' ' << (int)col+1 << std::endl;
             }
             break;
         }
         case BLACK: {
             if (row < 7 && col > 0) {
-                if (sides[row+1][col-1] == WHITE && pieces[row+1][col-1] == PAWN)
-                    return false;
+                if (sides[row+1][col-1] == WHITE && pieces[row+1][col-1] == PAWN) {
+                    if (!::cover_king) return false;
+                    else {
+                        if (ret) {
+                            cover.insert(std::make_pair(col-1,row+1));
+                            ret = false;
+                        }
+                        else {
+                            ::cover.clear();
+                            return false;
+                        }
+                    }
+                }
                 //std::cout << (int)row+1 << ' ' << (int)col-1 << std::endl;
             }
             if (row < 7 && col < 7) {
-                if (sides[row+1][col+1] == WHITE && pieces[row+1][col+1] == PAWN)
-                    return false;
+                if (sides[row+1][col+1] == WHITE && pieces[row+1][col+1] == PAWN) {
+                    if (!::cover_king) return false;
+                    else {
+                        if (ret) {
+                            cover.insert(std::make_pair(col+1,row+1));
+                            ret = false;
+                        }
+                        else {
+                            ::cover.clear();
+                            return false;
+                        }
+                    }
+                }
                 //std::cout << (int)row+1 << ' ' << (int)col+1 << std::endl;
             }
             break;
         }
     }
 
-    return true;
+    return ret;
 }
 
 std::set<std::pair<char,char>>* Board::availMovesKing(char col, char row) {
     std::set<std::pair<char,char>> *moveList = new std::set<std::pair<char,char>>;
 
     bool leftsafe_king = true, rightsafe_king = true;
-    bool myside = this->sides[row][col];
+    char myside = this->sides[row][col];
+    //std::cout << (int)row << ' ' << (int)col << ' ' << (int)myside << std::endl;
     if (col > 0) {
-        if (row > 0 && !this->sameSide(col,row,col-1,row-1))
+        if (row > 0 && !this->sameSide(col,row,col-1,row-1)) {
+            this->sides[row][col] = -1;
             if (this->checkKingSafe(col-1,row-1,myside))
                 moveList->insert(std::make_pair(col-1,row-1));
+            this->sides[row][col] = myside;
+        }
 
         if (!this->sameSide(col,row,col-1,row)) {
+            this->sides[row][col] = -1;
             if (this->checkKingSafe(col-1,row,myside))
                 moveList->insert(std::make_pair(col-1,row));
             else leftsafe_king = false;
+            this->sides[row][col] = myside;
         }
 
-        if (row < 7 && !this->sameSide(col,row,col-1,row+1))
+        if (row < 7 && !this->sameSide(col,row,col-1,row+1)) {
+            this->sides[row][col] = -1;
             if (this->checkKingSafe(col-1,row+1,myside))
                 moveList->insert(std::make_pair(col-1,row+1));
+            this->sides[row][col] = myside;
+        }
     }
 
-    if (row > 0 && !this->sameSide(col,row,col,row-1))
+    if (row > 0 && !this->sameSide(col,row,col,row-1)) {
+        this->sides[row][col] = -1;
         if (this->checkKingSafe(col,row-1,myside))
             moveList->insert(std::make_pair(col,row-1));
+        this->sides[row][col] = myside;
+    }
 
-    if (row < 7 && !this->sameSide(col,row,col,row+1))
+    if (row < 7 && !this->sameSide(col,row,col,row+1)) {
+        this->sides[row][col] = -1;
         if (this->checkKingSafe(col,row+1,myside))
             moveList->insert(std::make_pair(col,row+1));
+        this->sides[row][col] = myside;
+    }
 
     if (col < 7) {
-        if (row > 0 && !this->sameSide(col,row,col+1,row-1))
+        if (row > 0 && !this->sameSide(col,row,col+1,row-1)) {
+            this->sides[row][col] = -1;
             if (this->checkKingSafe(col+1,row-1,myside))
                 moveList->insert(std::make_pair(col+1,row-1));
+            this->sides[row][col] = myside;
+        }
 
         if (!this->sameSide(col,row,col+1,row)) {
+            this->sides[row][col] = -1;
             if (this->checkKingSafe(col+1,row,myside))
                 moveList->insert(std::make_pair(col+1,row));
             else rightsafe_king = false;
+            this->sides[row][col] = myside;
         }
 
-        if (row < 7 && !this->sameSide(col,row,col+1,row+1))
+        if (row < 7 && !this->sameSide(col,row,col+1,row+1)) {
+            this->sides[row][col] = -1;
             if (this->checkKingSafe(col+1,row+1,myside))
                 moveList->insert(std::make_pair(col+1,row+1));
+            this->sides[row][col] = myside;
+        }
     }
 
     // castling
-    char side = sides[row][col];
-    if (!king_moved[side]) {
-        if (!lrook_moved[side] && sides[row][col-1] == -1 && sides[row][col-2] == -1 && sides[row][col-3] == -1)
+    if (!king_moved[myside]) {
+        if (!lrook_moved[myside] && sides[row][col-1] == -1 && sides[row][col-2] == -1 && sides[row][col-3] == -1) {
+            this->sides[row][col] = -1;
             if (leftsafe_king && this->checkKingSafe(col-2,row,myside))
                 moveList->insert(std::make_pair(col-2,row));
+            this->sides[row][col] = myside;
+        }
 
-        if (!rrook_moved[side] && sides[row][col+1] == -1 && sides[row][col+2] == -1)
+        if (!rrook_moved[myside] && sides[row][col+1] == -1 && sides[row][col+2] == -1) {
+            this->sides[row][col] = -1;
             if (rightsafe_king && this->checkKingSafe(col+2,row,myside))
                 moveList->insert(std::make_pair(col+2,row));
+            this->sides[row][col] = myside;
+        }
     }
 
     return moveList;
@@ -344,15 +476,30 @@ std::set<std::pair<char,char>>* Board::availMovesPawn(char col, char row) {
 std::set<std::pair<char,char>>* Board::availableMoves(char col, char row) {
     if (this->sides[row][col] != turn) return new std::set<std::pair<char,char>>;
 
+    std::set<std::pair<char,char>> *availMoves;
     switch(this->pieces[row][col]) {
-        case KING: return this->availMovesKing(col,row);
-        case QUEEN: return this->availMovesQueen(col,row);
-        case BISHOP: return this->availMovesBishop(col,row);
-        case KNIGHT: return this->availMovesKnight(col,row);
-        case ROOK: return this->availMovesRook(col,row);
-        case PAWN: return this->availMovesPawn(col,row);
-        default: return new std::set<std::pair<char,char>>;
+        case KING: availMoves = this->availMovesKing(col,row); break;
+        case QUEEN: availMoves = this->availMovesQueen(col,row); break;
+        case BISHOP: availMoves = this->availMovesBishop(col,row); break;
+        case KNIGHT: availMoves = this->availMovesKnight(col,row); break;
+        case ROOK: availMoves = this->availMovesRook(col,row); break;
+        case PAWN: availMoves = this->availMovesPawn(col,row); break;
+        default: availMoves = new std::set<std::pair<char,char>>;
     }
+
+    ::cover_king = true;
+    if (!this->ourKingSafe()) {
+        if (this->pieces[row][col] != KING) {
+            std::set<std::pair<char,char>>::iterator it = availMoves->begin();
+            while (it != availMoves->end()) {
+                if (!::cover.count(*it)) availMoves->erase(it++);
+                else ++it;
+            }
+        }
+    }
+    ::cover_king = false;
+
+    return availMoves;
 }
 
 void Board::move(char col_from, char row_from, char col_to, char row_to) {
@@ -362,6 +509,8 @@ void Board::move(char col_from, char row_from, char col_to, char row_to) {
     switch (this->pieces[row_from][col_from]) {
         case KING: {
             king_moved[side] = true;
+            this->king_row[side] = row_to;
+            this->king_col[side] = col_to;
             if (abs(col_to - col_from) == 2) { // move rook out before castling
                 if (col_to < col_from) this->move(0,row_from,3,row_to);
                 else this->move(7,row_from,5,row_to);
@@ -403,7 +552,7 @@ void Board::move(char col_from, char row_from, char col_to, char row_to) {
     this->pieces[row_to][col_to] = this->pieces[row_from][col_from];
     this->pieces[row_from][col_from] = -1;
     this->turn = !this->turn;
-
+/*
     std::cout << "Moved from " << (int)row_from << (int)col_from << " to " << (int)row_to << (int)col_to << '\n';
     for (char i = 0; i < 8; ++i) {
         for (char j = 0; j < 8; ++j) {
@@ -413,7 +562,7 @@ void Board::move(char col_from, char row_from, char col_to, char row_to) {
         std::cout << '\n';
     }
     std::cout << "==========================================================" << std::endl;
-
+*/
     //std::cout << king_moved[0] << lrook_moved[0] << rrook_moved[0] << std::endl;
     //std::cout << (int)row_from << (int)col_from << ' ' << (int)row_to << (int)col_to << std::endl;
 }
