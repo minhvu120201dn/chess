@@ -20,7 +20,7 @@ char init_pieces[8][8] = { { 4, 3, 2, 1, 0, 2, 3, 4},
                            { 4, 3, 2, 1, 0, 2, 3, 4} };
 
 bool cover_king = false;
-std::set<std::pair<char,char>> cover;
+std::set< std::pair<char,char> > cover;
 
 Board::Board() {
     for (char i = 0; i < 8; ++i)
@@ -35,7 +35,7 @@ Board::Board(const Board& copy) {
 }
 
 bool Board::checkKingSafe(char col, char row, bool side) {
-    std::set<std::pair<char,char>> *temp;
+    std::set< std::pair<char,char> > *temp;
     char actual_side = this->sides[row][col];
     this->sides[row][col] = side;
     bool ret = true;
@@ -210,8 +210,8 @@ bool Board::checkKingSafe(char col, char row, bool side) {
     return ret;
 }
 
-std::set<std::pair<char,char>>* Board::availMovesKing(char col, char row) {
-    std::set<std::pair<char,char>> *moveList = new std::set<std::pair<char,char>>;
+std::set< std::pair<char,char> >* Board::availMovesKing(char col, char row) {
+    std::set< std::pair<char,char> > *moveList = new std::set< std::pair<char,char> >;
 
     bool leftsafe_king = true, rightsafe_king = true;
     char myside = this->sides[row][col];
@@ -298,8 +298,8 @@ std::set<std::pair<char,char>>* Board::availMovesKing(char col, char row) {
     return moveList;
 }
 
-std::set<std::pair<char,char>>* Board::availMovesQueen(char col, char row) {
-    std::set<std::pair<char,char>> *moveList = new std::set<std::pair<char,char>>;
+std::set< std::pair<char,char> >* Board::availMovesQueen(char col, char row) {
+    std::set< std::pair<char,char> > *moveList = new std::set< std::pair<char,char> >;
 
     for (char vert = col + 1, hori = row + 1; vert <= 7 && hori <= 7; ++vert, ++hori) {
         if (this->sameSide(col,row,vert,hori)) break;
@@ -352,8 +352,8 @@ std::set<std::pair<char,char>>* Board::availMovesQueen(char col, char row) {
     return moveList;
 }
 
-std::set<std::pair<char,char>>* Board::availMovesBishop(char col, char row) {
-    std::set<std::pair<char,char>> *moveList = new std::set<std::pair<char,char>>;
+std::set< std::pair<char,char> >* Board::availMovesBishop(char col, char row) {
+    std::set< std::pair<char,char> > *moveList = new std::set< std::pair<char,char> >;
 
     for (char vert = col + 1, hori = row + 1; vert <= 7 && hori <= 7; ++vert, ++hori) {
         if (this->sameSide(col,row,vert,hori)) break;
@@ -382,8 +382,8 @@ std::set<std::pair<char,char>>* Board::availMovesBishop(char col, char row) {
     return moveList;
 }
 
-std::set<std::pair<char,char>>* Board::availMovesKnight(char col, char row) {
-    std::set<std::pair<char,char>> *moveList = new std::set<std::pair<char,char>>;
+std::set< std::pair<char,char> >* Board::availMovesKnight(char col, char row) {
+    std::set< std::pair<char,char> > *moveList = new std::set< std::pair<char,char> >;
 
     if (col > 1) {
         if (row > 0 && !this->sameSide(col,row,col-2,row-1)) moveList->insert(std::make_pair(col-2,row-1));
@@ -408,8 +408,8 @@ std::set<std::pair<char,char>>* Board::availMovesKnight(char col, char row) {
     return moveList;
 }
 
-std::set<std::pair<char,char>>* Board::availMovesRook(char col, char row) {
-    std::set<std::pair<char,char>> *moveList = new std::set<std::pair<char,char>>;
+std::set< std::pair<char,char> >* Board::availMovesRook(char col, char row) {
+    std::set< std::pair<char,char> > *moveList = new std::set< std::pair<char,char> >;
 
     for (char vert = col + 1; vert <= 7; ++vert) {
         if (this->sameSide(col,row,vert,row)) break;
@@ -438,8 +438,8 @@ std::set<std::pair<char,char>>* Board::availMovesRook(char col, char row) {
     return moveList;
 }
 
-std::set<std::pair<char,char>>* Board::availMovesPawn(char col, char row) {
-    std::set<std::pair<char,char>> *moveList = new std::set<std::pair<char,char>>;
+std::set< std::pair<char,char> >* Board::availMovesPawn(char col, char row) {
+    std::set< std::pair<char,char> > *moveList = new std::set< std::pair<char,char> >;
 
     switch(this->sides[row][col]) {
         case WHITE: {
@@ -473,10 +473,10 @@ std::set<std::pair<char,char>>* Board::availMovesPawn(char col, char row) {
     return moveList;
 }
 
-std::set<std::pair<char,char>>* Board::availableMoves(char col, char row) {
-    if (this->sides[row][col] != turn) return new std::set<std::pair<char,char>>;
+std::set< std::pair<char,char> >* Board::availableMoves(char col, char row) {
+    if (this->sides[row][col] != turn) return new std::set< std::pair<char,char> >;
 
-    std::set<std::pair<char,char>> *availMoves;
+    std::set< std::pair<char,char> > *availMoves;
     switch(this->pieces[row][col]) {
         case KING: availMoves = this->availMovesKing(col,row); break;
         case QUEEN: availMoves = this->availMovesQueen(col,row); break;
@@ -484,13 +484,13 @@ std::set<std::pair<char,char>>* Board::availableMoves(char col, char row) {
         case KNIGHT: availMoves = this->availMovesKnight(col,row); break;
         case ROOK: availMoves = this->availMovesRook(col,row); break;
         case PAWN: availMoves = this->availMovesPawn(col,row); break;
-        default: availMoves = new std::set<std::pair<char,char>>;
+        default: availMoves = new std::set< std::pair<char,char> >;
     }
 
     ::cover_king = true;
     if (!this->ourKingSafe()) {
         if (this->pieces[row][col] != KING) {
-            std::set<std::pair<char,char>>::iterator it = availMoves->begin();
+            std::set< std::pair<char,char> >::iterator it = availMoves->begin();
             while (it != availMoves->end()) {
                 if (!::cover.count(*it)) availMoves->erase(it++);
                 else ++it;

@@ -16,19 +16,19 @@ private:
         return this->sides[row][col] == -1;
     }
     bool checkKingSafe(char,char,bool);
-    std::set<std::pair<char,char>>* availMovesKing(char,char);
-    std::set<std::pair<char,char>>* availMovesQueen(char,char);
-    std::set<std::pair<char,char>>* availMovesBishop(char,char);
-    std::set<std::pair<char,char>>* availMovesKnight(char,char);
-    std::set<std::pair<char,char>>* availMovesRook(char,char);
-    std::set<std::pair<char,char>>* availMovesPawn(char,char);
+    std::set< std::pair<char,char> >* availMovesKing(char,char);
+    std::set< std::pair<char,char> >* availMovesQueen(char,char);
+    std::set< std::pair<char,char> >* availMovesBishop(char,char);
+    std::set< std::pair<char,char> >* availMovesKnight(char,char);
+    std::set< std::pair<char,char> >* availMovesRook(char,char);
+    std::set< std::pair<char,char> >* availMovesPawn(char,char);
 public:
     Board();
     Board(const Board&);
     inline Board& operator=(const Board&);
     inline bool ourKingSafe();
     inline std::pair<char,char> operator[](std::pair<char,char>);
-    std::set<std::pair<char,char>>* availableMoves(char,char);
+    std::set< std::pair<char,char> >* availableMoves(char,char);
     void move(char,char,char,char);
 };
 

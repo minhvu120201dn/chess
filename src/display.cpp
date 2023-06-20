@@ -8,7 +8,7 @@ sf::Texture board_texture;
 
 sf::RectangleShape *movingFig;
 char xmov = -1, ymov = -1;
-std::set<std::pair<char,char>> *availableMoves = nullptr;
+std::set< std::pair<char,char> > *availableMoves = nullptr;
 bool king_moving = false;
 bool pawn_moving = false;
 
@@ -90,7 +90,7 @@ void DisplayedBoard::movePiece(int x, int y) {
         return;
     }
 #ifndef DEBUG
-    if (!::availableMoves->count({x,y})) {
+    if (!::availableMoves->count(std::make_pair(x,y))) {
         ::movingFig = nullptr;
         delete ::availableMoves;
         ::availableMoves = nullptr;
